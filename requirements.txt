@@ -1,0 +1,10 @@
+fastapi
+uvicorn
+folium
+pymongo
+python-dotenv
+mypy
+pytest
+requests
+Jinja2
+autopep8
