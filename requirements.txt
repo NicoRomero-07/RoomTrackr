@@ -1,7 +1,7 @@
 fastapi
 uvicorn
 folium
-pymongo
+pymongo[srv]
 python-dotenv
 mypy
 pytest
