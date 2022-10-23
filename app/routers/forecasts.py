@@ -1,8 +1,10 @@
 from datetime import datetime
+from typing import Optional
 from fastapi import APIRouter, HTTPException
 import requests
 from dotenv import dotenv_values
 from utils.utils import check_time_format, get_day_forecast, get_opendata_json
+from models.forecast import Forecast
 
 router = APIRouter()
 
@@ -20,21 +22,20 @@ def get_forecast(url: str):
     return requests.get(response[data_url]).json()
 
 
-@router.get("")
+@router.get("", response_model=Forecast)
 def get_all_forecasts():
     daily_forecast = get_forecast(AEMET_DAILY_FORECAST_URL)
-    return get_day_forecast(daily_forecast)
+    return get_day_forecast(daily_forecast)[0]
 
 
-@router.get("/today")
+@router.get("/today", response_model=Forecast)
 def get_today_forecasts():
     daily_forecast = get_forecast(AEMET_DAILY_FORECAST_URL)
     day = datetime.today().strftime('%Y-%m-%d')
-    print(day)
     return get_day_forecast(daily_forecast, day)
 
 
-@router.get("/{day}")
+@router.get("/{day}", response_model=Optional[Forecast])
 def get_forecast_by_day(day: str):
     try:
         check_time_format(day)

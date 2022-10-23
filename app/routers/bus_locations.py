@@ -1,5 +1,6 @@
-from typing import Optional
+from typing import List, Optional
 from fastapi import APIRouter, HTTPException
+from models.bus import Bus, BusFilter, NearbyBus
 from utils.utils import format_nearby_data_json, get_json_by_field, get_opendata_json, is_crs, proximity_search_buses
 import pandas as pd
 
@@ -18,12 +19,12 @@ def setup_geojson_dataframe():
     return df
 
 
-@router.get("")
+@router.get("", response_model=List[Bus])
 def get_all_bus_location():
     return get_opendata_json(BUS_LOCATION_GEOJSON_URL)
 
 
-@router.get("/search/nearby")
+@router.get("/search/nearby", response_model=NearbyBus)
 def get_nearby_buses(lat: float, lon: float, radius: Optional[int] = 500):
     if not is_crs(lat, lon):
         raise HTTPException(
@@ -34,17 +35,20 @@ def get_nearby_buses(lat: float, lon: float, radius: Optional[int] = 500):
     return format_nearby_data_json(df, lat, lon, radius)
 
 
-@router.get("/search")
+@router.get("/search", response_model=Optional[BusFilter])
 def get_location_by_line_code(line_code: str):
     df = setup_geojson_dataframe()
     line_code_field = "codLinea"
 
-    return get_json_by_field(df, line_code_field, float(line_code))
+    result = get_json_by_field(df, line_code_field, float(line_code))
+
+    return next(iter(result), None)
 
 
-@router.get("/{bus_code}")
+@router.get("/{bus_code}", response_model=Optional[BusFilter])
 def get_location_by_bus_code(bus_code: int):
     df = setup_geojson_dataframe()
     bus_code_field = "codBus"
+    result = get_json_by_field(df, bus_code_field, bus_code)
 
-    return get_json_by_field(df, bus_code_field, bus_code)
+    return next(iter(result), None)
