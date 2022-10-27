@@ -26,3 +26,26 @@ class BusStop(BaseModel):
 
 class NearbyBusStop(Nearby):
     datos: List[BusRoute]
+
+
+class BusStopDetail(BaseModel):
+    codParada: int
+    nombreParada: str
+    direccion: str
+    latitud: float
+    longitud: float
+
+
+class BusStopTmp(BaseModel):
+    parada: BusStopDetail
+    sentido: int
+    orden: int
+
+
+class BusStopByLineCode(BaseModel):
+    codLinea: float
+    userCodLinea: str
+    nombreLinea: str
+    cabeceraIda: str
+    cabeceraVuelta: str
+    paradas: List[BusStopTmp]

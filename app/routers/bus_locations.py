@@ -1,7 +1,7 @@
-from typing import List, Optional
+from typing import List, Union, Optional
 from fastapi import APIRouter, HTTPException
-from models.bus import Bus, BusFilter, NearbyBus
-from utils.utils import format_nearby_data_json, get_json_by_field, get_opendata_json, is_crs, proximity_search_buses
+from app.models.bus import Bus, BusFilter, NearbyBus
+from app.utils.utils import format_nearby_data_json, get_json_by_field, get_opendata_json, is_crs, proximity_search_buses
 import pandas as pd
 
 router = APIRouter()
@@ -10,11 +10,8 @@ BUS_LOCATION_GEOJSON_URL = f"{BUS_RESOURCES_URL}/EMTlineasUbicaciones/lineasyubi
 
 
 def setup_geojson_dataframe():
-    useless_fields = ["properties", "geometry_name"]
-
     df = pd.read_json(BUS_LOCATION_GEOJSON_URL)
     df["lastUpdate"] = df["properties"].apply(lambda x: x["last_update"])
-    df = df.drop(useless_fields, axis=1)
 
     return df
 
@@ -35,20 +32,20 @@ def get_nearby_buses(lat: float, lon: float, radius: Optional[int] = 500):
     return format_nearby_data_json(df, lat, lon, radius)
 
 
-@router.get("/search", response_model=Optional[BusFilter])
+@router.get("/search", response_model=Union[BusFilter, dict])
 def get_location_by_line_code(line_code: str):
     df = setup_geojson_dataframe()
     line_code_field = "codLinea"
 
     result = get_json_by_field(df, line_code_field, float(line_code))
 
-    return next(iter(result), None)
+    return next(iter(result), {})
 
 
-@router.get("/{bus_code}", response_model=Optional[BusFilter])
+@router.get("/{bus_code}", response_model=Union[BusFilter, dict])
 def get_location_by_bus_code(bus_code: int):
     df = setup_geojson_dataframe()
     bus_code_field = "codBus"
     result = get_json_by_field(df, bus_code_field, bus_code)
 
-    return next(iter(result), None)
+    return next(iter(result), {})

@@ -1,9 +1,9 @@
-from typing import Optional
+from typing import List, Optional, Union
 from fastapi import APIRouter, HTTPException
 import pandas as pd
-from models.bus_stop import BusStop, NearbyBusStop
+from app.models.bus_stop import BusStop, BusStopByLineCode, NearbyBusStop
 
-from utils.utils import format_nearby_data_json, get_json_by_field, get_opendata_json, is_crs, proximity_search_stops
+from app.utils.utils import format_nearby_data_json, get_json_by_field, get_opendata_json, is_crs, proximity_search_stops
 
 router = APIRouter()
 
@@ -13,15 +13,11 @@ BUS_STOPS_GEOJSON_URL = f"{BUS_RESOURCES_URL}/EMTLineasYParadas/lineasyparadas.g
 
 
 def setup_csv_dataframe():
-    useless_fields = ["lineas", "codLineaStrSin", "codLineaStr", "observaciones", "avisoSinHorarioEs",
-                      "avisoSinHorarioEn", "tagsAccesibilidad", "fechaInicioDemanda", "fechaFinDemanda", "linea", "espera"]
-
-    df = pd.read_csv(BUS_STOPS_CSV_URL, sep=",",
-                     usecols=lambda col: col not in useless_fields)
+    df = pd.read_csv(BUS_STOPS_CSV_URL, sep=",")
     return df
 
 
-@router.get("")
+@router.get("", response_model=List[BusStopByLineCode])
 def get_all_bus_stops():
     return get_opendata_json(BUS_STOPS_GEOJSON_URL)
 
@@ -38,19 +34,19 @@ def get_nearby_stops(lat: float, lon: float, radius: Optional[int] = 500):
     return result
 
 
-@router.get("/search", response_model=Optional[BusStop])
+@router.get("/search", response_model=Union[BusStop, dict])
 def get_stop_by_line_code(line_code: str):
     df = setup_csv_dataframe()
     line_code_field = "userCodLinea"
     result = get_json_by_field(df, line_code_field, str(line_code))
 
-    return next(iter(result), None)
+    return next(iter(result), {})
 
 
-@router.get("/{stop_code}", response_model=Optional[BusStop])
+@router.get("/{stop_code}", response_model=Union[BusStop, dict])
 def get_stop_by_stop_code(stop_code: str):
     df = setup_csv_dataframe()
     stop_code_field = "codParada"
     result = get_json_by_field(df, stop_code_field, int(stop_code))
 
-    return next(iter(result), None)
+    return next(iter(result), {})

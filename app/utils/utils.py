@@ -109,7 +109,7 @@ def get_day_forecast(daily_forecast: List[dict], day: str = None):
     result = forecasts
     if day:
         result = next(
-            (f for f in forecasts if f["fecha"] == f"{day}T00:00:00"), None)
+            (f for f in forecasts if f["fecha"] == f"{day}T00:00:00"), {})
 
     return result
 

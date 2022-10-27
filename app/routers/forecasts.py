@@ -1,10 +1,10 @@
 from datetime import datetime
-from typing import Optional
+from typing import Optional, Union
 from fastapi import APIRouter, HTTPException
 import requests
 from dotenv import dotenv_values
-from utils.utils import check_time_format, get_day_forecast, get_opendata_json
-from models.forecast import Forecast
+from app.utils.utils import check_time_format, get_day_forecast, get_opendata_json
+from app.models.forecast import Forecast
 
 router = APIRouter()
 
@@ -35,7 +35,7 @@ def get_today_forecasts():
     return get_day_forecast(daily_forecast, day)
 
 
-@router.get("/{day}", response_model=Optional[Forecast])
+@router.get("/{day}", response_model=Union[Forecast, dict])
 def get_forecast_by_day(day: str):
     try:
         check_time_format(day)
@@ -43,4 +43,5 @@ def get_forecast_by_day(day: str):
         raise HTTPException(status_code=400, detail="Incorrect date format.")
 
     daily_forecast = get_forecast(AEMET_DAILY_FORECAST_URL)
+
     return get_day_forecast(daily_forecast, day)
