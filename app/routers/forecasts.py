@@ -1,5 +1,5 @@
 from datetime import datetime
-from typing import Optional, Union
+from typing import Union
 from fastapi import APIRouter, HTTPException
 import requests
 from dotenv import dotenv_values
@@ -23,20 +23,20 @@ def get_forecast(url: str):
 
 
 @router.get("", response_model=Forecast)
-def get_all_forecasts():
+async def get_all_forecasts():
     daily_forecast = get_forecast(AEMET_DAILY_FORECAST_URL)
     return get_day_forecast(daily_forecast)[0]
 
 
 @router.get("/today", response_model=Forecast)
-def get_today_forecasts():
+async def get_today_forecasts():
     daily_forecast = get_forecast(AEMET_DAILY_FORECAST_URL)
     day = datetime.today().strftime('%Y-%m-%d')
     return get_day_forecast(daily_forecast, day)
 
 
 @router.get("/{day}", response_model=Union[Forecast, dict])
-def get_forecast_by_day(day: str):
+async def get_forecast_by_day(day: str):
     try:
         check_time_format(day)
     except ValueError:

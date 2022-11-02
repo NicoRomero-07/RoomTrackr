@@ -18,12 +18,12 @@ def setup_csv_dataframe():
 
 
 @router.get("", response_model=List[BusStopByLineCode])
-def get_all_bus_stops():
+async def get_all_bus_stops():
     return get_opendata_json(BUS_STOPS_GEOJSON_URL)
 
 
 @router.get("/search/nearby", response_model=NearbyBusStop)
-def get_nearby_stops(lat: float, lon: float, radius: Optional[int] = 500):
+async def get_nearby_stops(lat: float, lon: float, radius: Optional[int] = 500):
     if not is_crs(lat, lon):
         raise HTTPException(
             status_code=400, detail="Coordinates out of range.")
@@ -35,7 +35,7 @@ def get_nearby_stops(lat: float, lon: float, radius: Optional[int] = 500):
 
 
 @router.get("/search", response_model=Union[BusStop, dict])
-def get_stop_by_line_code(line_code: str):
+async def get_stop_by_line_code(line_code: str):
     df = setup_csv_dataframe()
     line_code_field = "userCodLinea"
     result = get_json_by_field(df, line_code_field, str(line_code))
@@ -44,7 +44,7 @@ def get_stop_by_line_code(line_code: str):
 
 
 @router.get("/{stop_code}", response_model=Union[BusStop, dict])
-def get_stop_by_stop_code(stop_code: str):
+async def get_stop_by_stop_code(stop_code: str):
     df = setup_csv_dataframe()
     stop_code_field = "codParada"
     result = get_json_by_field(df, stop_code_field, int(stop_code))

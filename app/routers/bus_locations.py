@@ -17,12 +17,12 @@ def setup_geojson_dataframe():
 
 
 @router.get("", response_model=List[Bus])
-def get_all_bus_location():
+async def get_all_bus_location():
     return get_opendata_json(BUS_LOCATION_GEOJSON_URL)
 
 
 @router.get("/search/nearby", response_model=NearbyBus)
-def get_nearby_buses(lat: float, lon: float, radius: Optional[int] = 500):
+async def get_nearby_buses(lat: float, lon: float, radius: Optional[int] = 500):
     if not is_crs(lat, lon):
         raise HTTPException(
             status_code=400, detail="Coordinates out of range.")
@@ -33,7 +33,7 @@ def get_nearby_buses(lat: float, lon: float, radius: Optional[int] = 500):
 
 
 @router.get("/search", response_model=Union[BusFilter, dict])
-def get_location_by_line_code(line_code: str):
+async def get_location_by_line_code(line_code: str):
     df = setup_geojson_dataframe()
     line_code_field = "codLinea"
 
@@ -43,7 +43,7 @@ def get_location_by_line_code(line_code: str):
 
 
 @router.get("/{bus_code}", response_model=Union[BusFilter, dict])
-def get_location_by_bus_code(bus_code: int):
+async def get_location_by_bus_code(bus_code: int):
     df = setup_geojson_dataframe()
     bus_code_field = "codBus"
     result = get_json_by_field(df, bus_code_field, bus_code)

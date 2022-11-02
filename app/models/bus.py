@@ -1,7 +1,7 @@
 from typing import List, Optional
 from pydantic import BaseModel, validator
 
-from .nearby import Nearby
+from app.models.nearby import Nearby
 
 
 class Geometry(BaseModel):
@@ -10,7 +10,7 @@ class Geometry(BaseModel):
 
     @validator("coordinates")
     def check_coordinates_length(cls, v):
-        if not len(v):
+        if len(v) != 2:
             raise ValueError("Wrong coordinates format.")
         return v
 
