@@ -1,8 +1,10 @@
 from datetime import datetime
+from typing import Union
 from fastapi import APIRouter, HTTPException
 import requests
 from dotenv import dotenv_values
-from utils.utils import check_time_format, get_day_forecast, get_opendata_json
+from app.utils.utils import check_time_format, get_day_forecast, get_opendata_json
+from app.models.forecast import Forecast
 
 router = APIRouter()
 
@@ -20,26 +22,26 @@ def get_forecast(url: str):
     return requests.get(response[data_url]).json()
 
 
-@router.get("")
-def get_all_forecasts():
+@router.get("", response_model=Forecast)
+async def get_all_forecasts():
     daily_forecast = get_forecast(AEMET_DAILY_FORECAST_URL)
-    return get_day_forecast(daily_forecast)
+    return get_day_forecast(daily_forecast)[0]
 
 
-@router.get("/today")
-def get_today_forecasts():
+@router.get("/today", response_model=Forecast)
+async def get_today_forecasts():
     daily_forecast = get_forecast(AEMET_DAILY_FORECAST_URL)
     day = datetime.today().strftime('%Y-%m-%d')
-    print(day)
     return get_day_forecast(daily_forecast, day)
 
 
-@router.get("/{day}")
-def get_forecast_by_day(day: str):
+@router.get("/{day}", response_model=Union[Forecast, dict])
+async def get_forecast_by_day(day: str):
     try:
         check_time_format(day)
     except ValueError:
         raise HTTPException(status_code=400, detail="Incorrect date format.")
 
     daily_forecast = get_forecast(AEMET_DAILY_FORECAST_URL)
+
     return get_day_forecast(daily_forecast, day)
