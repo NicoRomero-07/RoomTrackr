@@ -26,7 +26,7 @@ Execute the start.sh and it will install the necessary dependencies and run the 
 ## Run the API
 
 ```python
-uvicorn main.app:app
+uvicorn app.main:app
 ```
 
 ## Test the API
