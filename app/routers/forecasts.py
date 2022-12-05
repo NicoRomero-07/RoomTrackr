@@ -5,10 +5,13 @@ import requests
 from dotenv import dotenv_values
 from app.utils.utils import check_time_format, get_day_forecast, get_opendata_json
 from app.models.forecast import Forecast
+import os
 
 router = APIRouter()
 
-config = dotenv_values(".env")
+#config = dotenv_values(".env")
+
+config = os.environ
 
 MALAGA_CODE = 29067
 AEMET_BASE_URL = "https://opendata.aemet.es/opendata/api"
